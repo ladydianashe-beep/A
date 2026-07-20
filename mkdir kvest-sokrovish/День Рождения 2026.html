@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>38 причин — Квест Сокровищ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: black;
+            overflow: hidden;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'MedievalSharp', serif;
+        }
+
+        #screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            pointer-events: none;
+            background: black;
+        }
+
+        #screen img, #screen video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* Контейнер для экранов с кнопкой "Назад" (4a, 4b, 4c) */
+        .screen-with-back {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .screen-with-back img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* Кнопка возврата */
+        .back-button {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 20;
+            pointer-events: auto;
+            background: rgba(0,0,0,0.65);
+            color: #fff;
+            border: 2px solid rgba(255,215,0,0.7);
+            border-radius: 24px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            transition: background 0.2s, border-color 0.2s;
+            font-family: 'MedievalSharp', serif;
+            letter-spacing: 0.5px;
+        }
+
+        .back-button:active {
+            background: rgba(255,215,0,0.25);
+            border-color: gold;
+        }
+
+        /* Контейнер для 3.png с тремя зонами */
+        .three-zones-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .three-zones-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .zones-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            pointer-events: auto;
+        }
+
+        .zone {
+            flex: 1;
+            height: 100%;
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(255,215,0,0.15);
+            transition: background 0.15s;
+        }
+
+        .zone:active {
+            background: rgba(255,215,0,0.12);
+        }
+
+        /* Стили для игры HoMM */
+        :root{--parchment:#d4bc8a;--parchment-dark:#3a2e1f;--gold:#d4af37;--gold-light:#f0d878;--wood:#5c3d1e;--wood-dark:#3d2812;--stone-bg:#2a2118;--panel-border:#8b6914;}
+        
+        .game-wrapper {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            width: 100%;
+            height: 100%;
+            background-color: var(--stone-bg);
+            background-image: radial-gradient(circle at 20% 30%,rgba(90,70,45,0.4) 0%,transparent 50%),radial-gradient(circle at 80% 70%,rgba(60,45,25,0.5) 0%,transparent 50%),repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.15) 3px,rgba(0,0,0,0.15) 4px);
+            color: var(--parchment);
+            overflow: hidden;
+        }
+        .game-wrapper.active { display: flex; }
+
+        .top-panel{display:flex;align-items:center;gap:20px;background:linear-gradient(180deg,#6b4e28 0%,#3d2812 100%);border:4px solid var(--panel-border);border-radius:8px;padding:10px 25px;margin-bottom:15px;box-shadow:0 0 0 2px var(--wood-dark),0 6px 15px rgba(0,0,0,0.6);position:relative;flex-shrink:0;}
+        .top-panel::before,.top-panel::after{content:'';position:absolute;width:10px;height:10px;background:radial-gradient(circle,var(--gold-light),var(--gold));border-radius:50%;top:6px;box-shadow:0 1px 2px rgba(0,0,0,0.8);}
+        .top-panel::before{left:8px;}.top-panel::after{right:8px;}
+        .hero-icon{font-size:32px;filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.5));}
+        .treasure-counter{font-family:'Press Start 2P',cursive;font-size:13px;color:var(--gold-light);text-shadow:2px 2px 0 #000;letter-spacing:1px;}
+        .game-title{font-size:22px;color:var(--gold-light);text-shadow:2px 2px 0 #000,0 0 8px rgba(212,175,55,0.4);flex-shrink:0;}
+        .map-container{background:linear-gradient(135deg,#3d2812 0%,#2a1c0e 100%);border:6px solid var(--wood);border-radius:10px;padding:12px;box-shadow:inset 0 0 30px rgba(0,0,0,0.7),0 0 0 3px var(--wood-dark),0 8px 25px rgba(0,0,0,0.7);position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;}
+        #gameCanvas{display:block;cursor:pointer;border-radius:4px;max-width:100%;max-height:100%;width:auto;height:auto;}
+
+        .toast{position:fixed;top:20%;left:50%;transform:translateX(-50%) translateY(-20px);background:linear-gradient(180deg,#6b1e1e,#3d0f0f);border:3px solid var(--gold);color:var(--gold-light);padding:14px 28px;border-radius:6px;font-size:18px;box-shadow:0 5px 20px rgba(0,0,0,0.7);opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.3s;z-index:500;}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:1000;animation:fadeIn 0.3s;}
+        .modal-overlay.active{display:flex;}
+        @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+        
+        .scroll{background:linear-gradient(180deg,#e8d5a8 0%,#d4bc8a 50%,#c4a870 100%);border-radius:6px;padding:35px 40px;max-width:550px;width:90%;color:var(--parchment-dark);position:relative;box-shadow:0 10px 40px rgba(0,0,0,0.8);animation:scrollAppear 0.4s ease-out;border-top:14px solid #b8935c;border-bottom:14px solid #b8935c;max-height:90vh;overflow-y:auto;}
+        .scroll::before,.scroll::after{content:'';position:absolute;left:-6px;right:-6px;height:20px;background:linear-gradient(180deg,#8b6914,#5c3d1e);border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.5);}
+        .scroll::before{top:-20px;}.scroll::after{bottom:-20px;}
+        @keyframes scrollAppear{from{transform:scale(0.7) rotate(-2deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+        .scroll h2{font-size:26px;color:var(--wood-dark);text-align:center;margin-bottom:20px;text-shadow:1px 1px 0 rgba(255,255,255,0.3);}
+        .scroll p.question{font-size:18px;text-align:center;margin-bottom:22px;line-height:1.6;padding:0 10px;white-space:pre-wrap;}
+        .answer-input{width:100%;padding:12px;font-family:'MedievalSharp',serif;font-size:18px;background:#f5ead0;border:3px solid var(--wood);border-radius:4px;color:var(--parchment-dark);text-align:center;margin-bottom:18px;}
+        .answer-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 8px rgba(212,175,55,0.6);}
+        
+        .btn{display:block;width:100%;padding:14px;font-family:'MedievalSharp',serif;font-size:20px;color:var(--gold-light);background:linear-gradient(180deg,#6b4e28 0%,#3d2812 100%);border:3px solid var(--panel-border);border-radius:6px;cursor:pointer;text-shadow:1px 1px 0 #000;transition:transform 0.1s,filter 0.2s;box-shadow:0 4px 0 var(--wood-dark);margin-bottom:10px;}
+        .btn:hover{filter:brightness(1.2);}
+        .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--wood-dark);}
+        .btn:last-child{margin-bottom:0;}
+        .btn-answer{background:linear-gradient(180deg,#4a6b28 0%,#2a4a18 100%);border-color:#4a6b28;}
+        .btn-answer:hover{filter:brightness(1.3);}
+        .btn-heart{background:linear-gradient(180deg,#8b1e4a 0%,#4a0a2a 100%);border-color:#8b1e4a;font-size:28px;padding:12px;}
+        .btn-heart:hover{filter:brightness(1.3);}
+        
+        .hint{margin-top:15px;padding:10px;background:rgba(139,30,30,0.15);border-left:4px solid #8b1e1e;border-radius:4px;color:#8b1e1e;font-size:16px;text-align:center;display:none;}
+        .hint.show{display:block;animation:shake 0.4s;}
+        @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+        
+        .photo-placeholder{width:100%;height:200px;border:4px solid var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;background:linear-gradient(135deg,#2a1c0e,#1a120a);position:relative;overflow:hidden;}
+        .photo-placeholder img{width:100%;height:100%;object-fit:cover;border-radius:4px;}
+        .photo-placeholder .placeholder-text{font-size:48px;color:var(--gold-light);text-shadow:2px 2px 0 #000;opacity:0.5;}
+        
+        .reason-text{font-size:22px;text-align:center;color:#7a1e5c;margin-bottom:20px;font-style:italic;line-height:1.4;}
+        .reason-number{font-family:'Press Start 2P',cursive;font-size:12px;text-align:center;margin-bottom:12px;background:var(--wood-dark);padding:8px;border-radius:4px;color:var(--gold-light);}
+        
+        #fireworksCanvas{position:fixed;inset:0;pointer-events:none;z-index:900;display:none;}
+        
+        .final-scroll .reason-text{font-size:28px;color:#7a1e5c;text-align:center;line-height:1.8;}
+        .final-scroll .reason-text .highlight{color:#c0392b;font-size:32px;}
+        .btn-final{background:linear-gradient(180deg,#8b1e4a 0%,#4a0a2a 100%);border-color:#8b1e4a;font-size:32px;padding:8px;width:auto;margin:0 auto;}
+        .btn-final:hover{filter:brightness(1.3);}
+        .btn-group{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+
+        .debug-log {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            color: #fff;
+            background: rgba(0,0,0,0.75);
+            padding: 6px 10px;
+            font-size: 11px;
+            z-index: 100;
+            border-radius: 4px;
+            font-family: monospace;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="screen"></div>
+    <div id="debug" class="debug-log"></div>
+
+    <!-- ИГРА (скрыта) -->
+    <div class="game-wrapper" id="gameWrapper">
+        <div class="top-panel">
+            <span class="hero-icon">🐴</span>
+            <span class="treasure-counter" id="counter">Сокровища: 0/3</span>
+        </div>
+        <div class="game-title" style="margin-bottom:15px;">⚔ Квест Сокровищ ⚔</div>
+        <div class="map-container"><canvas id="gameCanvas"></canvas></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- МОДАЛЬНЫЕ ОКНА -->
+    <div class="modal-overlay" id="questionModal">
+        <div class="scroll">
+            <h2>🗝 Древний Свиток 🗝</h2>
+            <p class="question" id="questionText"></p>
+            <div id="answerContainer">
+                <input type="text" class="answer-input" id="answerInput" placeholder="Твой ответ..." autocomplete="off">
+                <button class="btn" id="submitAnswer">Ответить</button>
+            </div>
+            <div id="buttonGroup" class="btn-group" style="display:none;"></div>
+            <div class="hint" id="hintBox"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="rewardModal">
+        <div class="scroll">
+            <h2>✨ Сокровище открыто! ✨</h2>
+            <div class="reason-number" id="rewardNumber"></div>
+            <div class="photo-placeholder" id="rewardPhoto">
+                <span class="placeholder-text">📜</span>
+            </div>
+            <p class="reason-text" id="rewardReason"></p>
+            <button class="btn" id="closeReward">Продолжить путь</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="finalModal">
+        <div class="scroll final-scroll">
+            <h2>🏆 ВСЕ СОКРОВИЩА СОБРАНЫ! 🏆</h2>
+            <p class="reason-text">
+                <span class="highlight">✨</span> Ты нашёл все три сокровища! <span class="highlight">✨</span><br>
+                <span style="font-size:32px;color:#8b1e4a;">Открыта финальная сцена!</span>
+            </p>
+            <button class="btn btn-final" id="closeFinal">💖</button>
+        </div>
+    </div>
+
+    <canvas id="fireworksCanvas"></canvas>
+
+    <script>
+        (function() {
+            // ==================== ЛОГГЕР ====================
+            const debugEl = document.getElementById('debug');
+            function log(msg) {
+                console.log('[QUEST]', msg);
+                debugEl.textContent = msg;
+            }
+
+            // ==================== ЭТАПЫ ====================
+            const STAGE = {
+                INTRO_IMAGE: 'intro_image',
+                SECOND_IMAGE: 'second_image',
+                VIDEO_INTRO: 'video_intro',
+                THREE_ZONES: 'three_zones',
+                RESULT_A: 'result_a',
+                RESULT_B: 'result_b',
+                RESULT_C: 'result_c',
+                INSTRUCTION: 'instruction',
+                GAME: 'game',
+                FINAL_VIDEO: 'final_video'
+            };
+
+            let currentStage = null;
+            let isFinalVideoPlaying = false;
+            const screen = document.getElementById('screen');
+            const gameWrapper = document.getElementById('gameWrapper');
+            let capturedFrame = null; // для хранения последнего кадра финального видео
+
+            // ==================== ОЧИСТКА ====================
+            function clearScreen() {
+                screen.innerHTML = '';
+                screen.style.display = 'flex';
+                gameWrapper.classList.remove('active');
+                screen.style.pointerEvents = 'none';
+                screen.style.background = 'black';
+            }
+
+            // ==================== ПОКАЗАТЬ ВИДЕО С ЗВУКОМ ====================
+            function showVideo(src, nextStage, autoPlay = true) {
+                log('Видео: ' + src);
+                clearScreen();
+                screen.style.display = 'flex';
+                screen.style.pointerEvents = 'none';
+                screen.style.background = 'black';
+
+                const video = document.createElement('video');
+                video.src = src;
+                video.playsInline = true;
+                video.muted = false;
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
+                video.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+                screen.appendChild(video);
+
+                // === ФИКС ДЛЯ ФИНАЛЬНОГО ВИДЕО ===
+                if (nextStage === 'final_end') {
+                    let frameCaptured = false;
+                    let lastFrameData = null;
+
+                    // Функция захвата последнего кадра
+                    function captureLastFrame() {
+                        if (frameCaptured) return;
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = video.videoWidth || 1920;
+                            canvas.height = video.videoHeight || 1080;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            lastFrameData = canvas.toDataURL('image/png');
+                            capturedFrame = lastFrameData;
+                            frameCaptured = true;
+                            log('Последний кадр захвачен');
+                        } catch(e) {
+                            log('Ошибка захвата кадра: ' + e);
+                        }
+                    }
+
+                    // Следим за временем, чтобы захватить последний кадр
+                    video.addEventListener('timeupdate', function() {
+                        const timeLeft = video.duration - video.currentTime;
+                        if (timeLeft < 0.15 && !frameCaptured) {
+                            captureLastFrame();
+                        }
+                    });
+
+                    // На случай, если timeupdate не сработал
+                    video.addEventListener('ended', function() {
+                        if (!frameCaptured) {
+                            captureLastFrame();
+                        }
+                        // Показываем последний кадр вместо чёрного экрана
+                        if (capturedFrame) {
+                            video.style.display = 'none';
+                            const img = document.createElement('img');
+                            img.src = capturedFrame;
+                            img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+                            img.alt = 'Последний кадр';
+                            screen.appendChild(img);
+                            log('Показан последний кадр как изображение');
+                        }
+                    });
+                }
+
+                video.onerror = function() {
+                    log('ОШИБКА видео: ' + src);
+                    if (nextStage && nextStage !== 'final_end') goToStage(nextStage);
+                    return;
+                };
+
+                if (autoPlay) {
+                    var playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(function() {
+                            log('Видео играет со звуком');
+                        }).catch(function(err) {
+                            log('Нужен тап для видео: ' + err);
+                            screen.style.pointerEvents = 'auto';
+                            screen.onclick = function() {
+                                video.play();
+                                screen.style.pointerEvents = 'none';
+                                screen.onclick = null;
+                            };
+                        });
+                    }
+                }
+
+                video.onended = function() {
+                    // Если это финальное видео, мы уже обработали конец в обработчике ended выше
+                    if (nextStage === 'final_end') {
+                        log('Финальное видео завершено');
+                        // Не удаляем видео, так как мы уже показали картинку
+                        return;
+                    }
+                    video.remove();
+                    if (nextStage) {
+                        goToStage(nextStage);
+                    }
+                };
+            }
+
+            // ==================== ИЗОБРАЖЕНИЕ С КЛИКОМ ПО ЭКРАНУ ====================
+            function showImage(src, nextStage) {
+                log('Загрузка: ' + src);
+                clearScreen();
+                screen.style.display = 'flex';
+                screen.style.background = 'black';
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = '';
+                img.onload = function() { log('Загружено: ' + src); };
+                img.onerror = function() {
+                    log('ОШИБКА: не найден ' + src);
+                    screen.innerHTML = '<div style="color:#fff;text-align:center;padding:20px;"><h2>Файл не найден</h2><p>' + src + '</p></div>';
+                };
+                screen.appendChild(img);
+
+                screen.style.pointerEvents = 'auto';
+                screen.onclick = function() {
+                    if (nextStage) goToStage(nextStage);
+                };
+            }
+
+            // ==================== ИЗОБРАЖЕНИЕ С КНОПКОЙ "НАЗАД" ====================
+            function showImageWithBack(src) {
+                log('Загрузка с кнопкой назад: ' + src);
+                clearScreen();
+                screen.style.display = 'flex';
+                screen.style.pointerEvents = 'none';
+                screen.style.background = 'black';
+
+                const container = document.createElement('div');
+                container.className = 'screen-with-back';
+
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = '';
+                img.onerror = function() {
+                    log('ОШИБКА: не найден ' + src);
+                };
+                container.appendChild(img);
+
+                const backBtn = document.createElement('button');
+                backBtn.className = 'back-button';
+                backBtn.textContent = '← Назад';
+                backBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    log('Возврат на 3.png');
+                    goToStage(STAGE.THREE_ZONES);
+                };
+                container.appendChild(backBtn);
+
+                screen.appendChild(container);
+
+                screen.style.pointerEvents = 'auto';
+                screen.onclick = function(e) {
+                    if (e.target === screen || e.target === container || e.target === img) {
+                        goToStage(STAGE.INSTRUCTION);
+                    }
+                };
+            }
+
+            // ==================== 3.png С ТРЕМЯ ЗОНАМИ ====================
+            function showThreeZones() {
+                log('Три зоны на 3.png');
+                clearScreen();
+                screen.style.display = 'flex';
+                screen.style.pointerEvents = 'none';
+                screen.style.background = 'black';
+
+                const container = document.createElement('div');
+                container.className = 'three-zones-container';
+
+                const img = document.createElement('img');
+                img.src = '3.png';
+                img.alt = '';
+                img.onerror = function() { log('ОШИБКА: 3.png'); };
+                container.appendChild(img);
+
+                const overlay = document.createElement('div');
+                overlay.className = 'zones-overlay';
+
+                const zones = [
+                    { stage: STAGE.RESULT_A, label: 'Левая' },
+                    { stage: STAGE.RESULT_B, label: 'Центр' },
+                    { stage: STAGE.RESULT_C, label: 'Правая' }
+                ];
+
+                zones.forEach(function(z) {
+                    const zone = document.createElement('div');
+                    zone.className = 'zone';
+                    zone.onclick = function(e) {
+                        e.stopPropagation();
+                        log('Нажата зона: ' + z.label);
+                        goToStage(z.stage);
+                    };
+                    overlay.appendChild(zone);
+                });
+
+                container.appendChild(overlay);
+                screen.appendChild(container);
+            }
+
+            // ==================== ПОКАЗАТЬ ИГРУ ====================
+            function showGame() {
+                log('Запуск игры');
+                clearScreen();
+                screen.style.display = 'none';
+                gameWrapper.classList.add('active');
+                initGame();
+            }
+
+            // ==================== НАВИГАЦИЯ ====================
+            function goToStage(stage) {
+                currentStage = stage;
+                log('→ Этап: ' + stage);
+                screen.onclick = null;
+                screen.style.pointerEvents = 'none';
+                screen.style.background = 'black';
+
+                // Если игра активна, скрываем её
+                gameWrapper.classList.remove('active');
+
+                switch (stage) {
+                    case STAGE.INTRO_IMAGE:
+                        showImage('1.png', STAGE.SECOND_IMAGE);
+                        break;
+                    case STAGE.SECOND_IMAGE:
+                        showImage('2.png', STAGE.VIDEO_INTRO);
+                        break;
+                    case STAGE.VIDEO_INTRO:
+                        showVideo('intro.mp4', STAGE.THREE_ZONES);
+                        break;
+                    case STAGE.THREE_ZONES:
+                        showThreeZones();
+                        break;
+                    case STAGE.RESULT_A:
+                        showImageWithBack('4a.png');
+                        break;
+                    case STAGE.RESULT_B:
+                        showImageWithBack('4b.png');
+                        break;
+                    case STAGE.RESULT_C:
+                        showImageWithBack('4c.png');
+                        break;
+                    case STAGE.INSTRUCTION:
+                        showImage('5_instruction.png', STAGE.GAME);
+                        break;
+                    case STAGE.GAME:
+                        showGame();
+                        break;
+                    case STAGE.FINAL_VIDEO:
+                        isFinalVideoPlaying = true;
+                        showVideo('final.mp4', 'final_end');
+                        break;
+                    default:
+                        log('Неизвестный этап: ' + stage);
+                }
+            }
+
+            // ==================== ИГРА ====================
+            const CHESTS_CONTENT = [
+                {
+                    question: "Ты самое лучшее, что есть в моей жизни потому что ты есть моя жизнь, ты и есть мой мир...\n\nКогда я приехала в Иркутск и только устроилась работать, все коллеги говорили о легендарном Антоне, я уже тогда тебя полюбила от того, как тебя любят все окружающие. А потом и каждая улочка Иркутска для меня стала говорить только о тебе. Это твой город, здесь все мне говорит о тебе. Как и весь Израиль. А теперь и все столицы мира, где ты побывал. Как и весь мир, который ты уже описал в своих стихах. Для меня ты и есть целый мир, ты и есть сокровище Антоша!",
+                    answer: null,
+                    isButton: true,
+                    buttons: ["Дина...", " ... "],
+                    reason: "Причина №1: Ты — мой целый мир ❤️"
+                },
+                {
+                    question: "У тебя самый красивый, самый мужественный и глубокий голос на свете. Когда ты присылаешь мне свои аудио - сердце замирает от нежности. Я так люблю тебя слушать, люблю, когда ты поешь, когда читаешь стихи, когда говоришь на разных языках. Ты и есть душа этого мира, его музыка и слова. Ты прекрасен, Антоша!",
+                    answer: null,
+                    isButton: true,
+                    buttons: ["Не вычеркнуть запах твоего голоса, чтобы ни звука не досталось Каплям..."],
+                    reason: "Причина №2: Ты — душа этого мира, его музыка и слова 🎵"
+                },
+                {
+                    question: "Ты наполняешь этот мир светом, любовью и надеждой. Ты такой искренний и настоящий, ты и есть смысл, ради которого хочется обнять весь мир. Общение с тобой - это самое настоящее счастье. Для меня ты - это и есть Счастье.",
+                    answer: null,
+                    isButton: true,
+                    buttons: ["❤️"],
+                    isHeart: true,
+                    reason: "Причина №3: Ты — моё Счастье 💖"
+                }
+            ];
+
+            const MAP_IMAGE_SRC = "map.jpg";
+            const MAP_WIDTH = 761;
+            const MAP_HEIGHT = 596;
+
+            const HEX_SIZE = 33;
+            const HEX_W = Math.sqrt(3) * HEX_SIZE;
+            const HEX_H = 2 * HEX_SIZE;
+            const HEX_V_SPACING = HEX_H * 0.75;
+            const GRID_OX = 4, GRID_OY = 4;
+
+            function hexToPixel(col, row) {
+                const offset = (row % 2) * (HEX_W / 2);
+                return {
+                    x: col * HEX_W + HEX_W / 2 + offset + GRID_OX,
+                    y: row * HEX_V_SPACING + HEX_H / 2 + GRID_OY
+                };
+            }
+
+            const MAP_LAYOUT = [
+                "##############",
+                "##############",
+                "######...#####",
+                "#####.....####",
+                "####.......###",
+                "###.........##",
+                "##..........##",
+                "##...........#",
+                "##..........##",
+                "###........###",
+                "#####....#####",
+                "##############"
+            ];
+            const ROWS = MAP_LAYOUT.length;
+            const COLS = MAP_LAYOUT[0].length;
+
+            const CHEST_POSITIONS = [
+                { col: 7, row: 3 },
+                { col: 2, row: 7 },
+                { col: 6, row: 10 }
+            ];
+
+            const HERO_START = { col: 6, row: 6 };
+
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = MAP_WIDTH;
+            canvas.height = MAP_HEIGHT;
+
+            let hero = { ...HERO_START };
+            let heroPixel = hexToPixel(hero.col, hero.row);
+            let openedChests = [false, false, false];
+            let activeChestIndex = null;
+            let isMoving = false;
+            let mapImg = new Image();
+            let imgReady = false;
+            let highlightHex = null;
+
+            function inBounds(col, row) { return row >= 0 && row < ROWS && col >= 0 && col < COLS; }
+
+            function isChestCell(col, row) {
+                return CHEST_POSITIONS.findIndex(c => c.col === col && c.row === row);
+            }
+
+            function isPassable(col, row) {
+                if (!inBounds(col, row)) return false;
+                return MAP_LAYOUT[row][col] === '.' || isChestCell(col, row) !== -1;
+            }
+
+            function getNeighbors(col, row) {
+                const even = row % 2 === 0;
+                const dirs = even
+                    ? [[-1, 0], [1, 0], [0, -1], [-1, -1], [0, 1], [-1, 1]]
+                    : [[-1, 0], [1, 0], [1, -1], [0, -1], [1, 1], [0, 1]];
+                return dirs.map(([dc, dr]) => ({ col: col + dc, row: row + dr })).filter(n => inBounds(n.col, n.row));
+            }
+
+            function areNeighbors(a, b) {
+                return getNeighbors(a.col, a.row).some(n => n.col === b.col && n.row === b.row);
+            }
+
+            let audioCtx = null;
+
+            function initAudio() { if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)(); }
+
+            function playTone(f, d, t = 'square', v = 0.15) {
+                if (!audioCtx) return;
+                const o = audioCtx.createOscillator(),
+                    g = audioCtx.createGain();
+                o.type = t;
+                o.frequency.value = f;
+                g.gain.setValueAtTime(v, audioCtx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + d);
+                o.connect(g);
+                g.connect(audioCtx.destination);
+                o.start();
+                o.stop(audioCtx.currentTime + d);
+            }
+
+            function soundMove() { playTone(220, 0.08, 'square');
+                setTimeout(() => playTone(180, 0.06, 'square'), 60); }
+
+            function soundChest() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.15, 'triangle', 0.2), i * 100)); }
+
+            function soundWrong() { playTone(160, 0.2, 'sawtooth', 0.15);
+                setTimeout(() => playTone(110, 0.25, 'sawtooth', 0.15), 120); }
+
+            function soundVictory() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => setTimeout(() => playTone(f, 0.25, 'triangle', 0.2), i * 150)); }
+
+            function drawHero(cx, cy) {
+                ctx.save();
+                const s = HEX_SIZE * 0.55;
+                ctx.fillStyle = 'rgba(0,0,0,0.45)';
+                ctx.beginPath();
+                ctx.ellipse(cx, cy + s * 0.75, s * 0.9, s * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#6b4423';
+                ctx.fillRect(cx - s * 0.7, cy, s * 1.4, s * 0.5);
+                ctx.fillRect(cx - s * 0.6, cy + s * 0.5, 5, s * 0.4);
+                ctx.fillRect(cx + s * 0.4, cy + s * 0.5, 5, s * 0.4);
+                ctx.fillStyle = '#5c3a1e';
+                ctx.fillRect(cx + s * 0.5, cy - s * 0.3, s * 0.4, s * 0.5);
+                ctx.fillStyle = '#3d2610';
+                ctx.fillRect(cx + s * 0.35, cy - s * 0.35, 6, s * 0.5);
+                ctx.fillStyle = '#8a94a0';
+                ctx.fillRect(cx - s * 0.25, cy - s * 0.6, s * 0.5, s * 0.6);
+                ctx.fillStyle = '#a0aab5';
+                ctx.fillRect(cx - s * 0.15, cy - s * 0.85, s * 0.3, s * 0.3);
+                ctx.fillStyle = '#c0392b';
+                ctx.fillRect(cx - s * 0.05, cy - s * 1.05, 5, s * 0.25);
+                ctx.fillStyle = '#c0a060';
+                ctx.fillRect(cx + s * 0.3, cy - s * 0.9, 3, s * 0.9);
+                ctx.fillStyle = '#d0d0d0';
+                ctx.fillRect(cx + s * 0.28, cy - s * 1.0, 7, 8);
+                ctx.restore();
+            }
+
+            function drawChestGlow(cx, cy) {
+                const t = performance.now() / 400;
+                const pulse = 0.5 + 0.5 * Math.sin(t);
+                ctx.save();
+                ctx.strokeStyle = `rgba(240,216,120,${0.4 + pulse * 0.5})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(cx, cy, HEX_SIZE * 0.7, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.font = '16px serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('✨', cx, cy - HEX_SIZE * 0.75);
+                ctx.restore();
+            }
+
+            function drawOpenedMark(cx, cy) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+                ctx.lineWidth = 8;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(cx - 12, cy);
+                ctx.lineTo(cx - 3, cy + 10);
+                ctx.lineTo(cx + 14, cy - 12);
+                ctx.stroke();
+                ctx.strokeStyle = '#2ecc71';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(cx - 12, cy);
+                ctx.lineTo(cx - 3, cy + 10);
+                ctx.lineTo(cx + 14, cy - 12);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (imgReady) ctx.drawImage(mapImg, 0, 0, MAP_WIDTH, MAP_HEIGHT);
+                else { ctx.fillStyle = '#2a1c0e';
+                    ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT); }
+
+                const moves = getNeighbors(hero.col, hero.row).filter(n => isPassable(n.col, n.row));
+                moves.forEach(m => {
+                    const { x, y } = hexToPixel(m.col, m.row);
+                    const hov = highlightHex && highlightHex.col === m.col && highlightHex.row === m.row;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(x, y, HEX_SIZE * 0.42, 0, Math.PI * 2);
+                    ctx.fillStyle = hov ? 'rgba(240,216,120,0.55)' : 'rgba(240,216,120,0.20)';
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                CHEST_POSITIONS.forEach((c, i) => {
+                    const { x, y } = hexToPixel(c.col, c.row);
+                    if (openedChests[i]) drawOpenedMark(x, y);
+                    else drawChestGlow(x, y);
+                });
+
+                drawHero(heroPixel.x, heroPixel.y);
+            }
+
+            function loop() { render();
+                requestAnimationFrame(loop); }
+
+            function pixelToHex(px, py) {
+                let best = null,
+                    min = Infinity;
+                for (let r = 0; r < ROWS; r++)
+                    for (let c = 0; c < COLS; c++) {
+                        const { x, y } = hexToPixel(c, r);
+                        const d = Math.hypot(px - x, py - y);
+                        if (d < min && d < HEX_SIZE) { min = d;
+                            best = { col: c, row: r }; }
+                    }
+                return best;
+            }
+
+            function moveHeroTo(col, row) {
+                if (isMoving) return;
+                isMoving = true;
+                soundMove();
+                const start = { ...heroPixel },
+                    target = hexToPixel(col, row),
+                    dur = 300,
+                    t0 = performance.now();
+
+                function anim(now) {
+                    const t = Math.min((now - t0) / dur, 1),
+                        e = 1 - Math.pow(1 - t, 3);
+                    heroPixel.x = start.x + (target.x - start.x) * e;
+                    heroPixel.y = start.y + (target.y - start.y) * e;
+                    if (t < 1) requestAnimationFrame(anim);
+                    else { hero = { col, row };
+                        heroPixel = { ...target };
+                        isMoving = false; }
+                }
+                requestAnimationFrame(anim);
+            }
+
+            const questionModal = document.getElementById('questionModal');
+            const rewardModal = document.getElementById('rewardModal');
+            const finalModal = document.getElementById('finalModal');
+
+            function openQuestion(i) {
+                activeChestIndex = i;
+                const c = CHESTS_CONTENT[i];
+                document.getElementById('questionText').textContent = c.question;
+                document.getElementById('hintBox').classList.remove('show');
+
+                const answerContainer = document.getElementById('answerContainer');
+                const buttonGroup = document.getElementById('buttonGroup');
+
+                if (c.isButton && c.buttons) {
+                    answerContainer.style.display = 'none';
+                    buttonGroup.style.display = 'flex';
+                    buttonGroup.innerHTML = '';
+                    c.buttons.forEach(btnText => {
+                        const btn = document.createElement('button');
+                        if (c.isHeart) {
+                            btn.className = 'btn btn-heart';
+                            btn.textContent = '❤️';
+                        } else {
+                            btn.className = 'btn btn-answer';
+                            btn.textContent = btnText;
+                        }
+                        btn.addEventListener('click', () => {
+                            handleCorrectAnswer();
+                        });
+                        buttonGroup.appendChild(btn);
+                    });
+                } else {
+                    answerContainer.style.display = 'block';
+                    buttonGroup.style.display = 'none';
+                    document.getElementById('answerInput').value = '';
+                    setTimeout(() => document.getElementById('answerInput').focus(), 100);
+                }
+
+                questionModal.classList.add('active');
+            }
+
+            function handleCorrectAnswer() {
+                openedChests[activeChestIndex] = true;
+                soundChest();
+                questionModal.classList.remove('active');
+                updateCounter();
+                showReward(activeChestIndex);
+            }
+
+            function checkAnswer() {
+                const c = CHESTS_CONTENT[activeChestIndex];
+                if (c.isButton) return;
+
+                const inp = document.getElementById('answerInput').value.trim().toLowerCase();
+                const cor = c.answer.trim().toLowerCase();
+                if (inp === cor) {
+                    handleCorrectAnswer();
+                } else {
+                    soundWrong();
+                    const h = document.getElementById('hintBox');
+                    h.textContent = "✖ Неверно! Подсказка: ответ — «" + c.answer + "»";
+                    h.classList.add('show');
+                }
+            }
+
+            document.getElementById('submitAnswer').addEventListener('click', checkAnswer);
+            document.getElementById('answerInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer(); });
+
+            function showReward(i) {
+                const c = CHESTS_CONTENT[i];
+                const photoContainer = document.getElementById('rewardPhoto');
+                const openedCount = openedChests.filter(c => c).length;
+
+                document.getElementById('rewardNumber').textContent = "Сокровище " + (i + 1) + " из 3";
+
+                let imageName = '';
+                if (openedCount === 1) {
+                    imageName = '33.png';
+                } else if (openedCount === 2) {
+                    imageName = '66.png';
+                } else if (openedCount === 3) {
+                    imageName = '99.png';
+                }
+
+                photoContainer.innerHTML = `<img src="${imageName}" alt="Сокровище">`;
+
+                const img = photoContainer.querySelector('img');
+                img.onerror = function() {
+                    photoContainer.innerHTML = `<span class="placeholder-text">📜</span>`;
+                };
+
+                document.getElementById('rewardReason').textContent = c.reason;
+                rewardModal.classList.add('active');
+            }
+
+            document.getElementById('closeReward').addEventListener('click', () => {
+                rewardModal.classList.remove('active');
+                if (openedChests.every(c => c)) {
+                    setTimeout(showFinal, 3000);
+                }
+            });
+
+            function showFinal() {
+                finalModal.classList.add('active');
+                startFireworks();
+                soundVictory();
+            }
+
+            document.getElementById('closeFinal').addEventListener('click', () => {
+                finalModal.classList.remove('active');
+                goToStage(STAGE.FINAL_VIDEO);
+            });
+
+            function updateCounter() {
+                const count = openedChests.filter(c => c).length;
+                document.getElementById('counter').textContent = "Сокровища: " + count + "/3";
+            }
+
+            function showToast(msg) {
+                const t = document.getElementById('toast');
+                t.textContent = msg;
+                t.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+            }
+            let toastTimer = null;
+
+            // ==================== ФЕЙЕРВЕРК ====================
+            const fwCanvas = document.getElementById('fireworksCanvas');
+            const fwCtx = fwCanvas.getContext('2d');
+            let particles = [],
+                fireworksActive = false;
+
+            function resizeFw() { fwCanvas.width = innerWidth;
+                fwCanvas.height = innerHeight; }
+            addEventListener('resize', resizeFw);
+            resizeFw();
+
+            function createBurst(x, y) {
+                const colors = ['#f0d878', '#c0392b', '#3498db', '#2ecc71', '#e74c3c', '#f39c12'];
+                const col = colors[Math.floor(Math.random() * colors.length)];
+                for (let i = 0; i < 30; i++) {
+                    const a = (Math.PI * 2 * i) / 30,
+                        sp = 2 + Math.random() * 4;
+                    particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: col, size: 3 + Math.random() * 3 });
+                }
+            }
+
+            function startFireworks() {
+                fwCanvas.style.display = 'block';
+                fireworksActive = true;
+                let b = 0;
+                const iv = setInterval(() => {
+                    createBurst(Math.random() * fwCanvas.width, Math.random() * fwCanvas.height * 0.6);
+                    if (++b > 12) clearInterval(iv);
+                }, 400);
+                animateFireworks();
+                setTimeout(() => fireworksActive = false, 8000);
+            }
+
+            function animateFireworks() {
+                fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+                particles = particles.filter(p => p.life > 0);
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.08;
+                    p.life -= 0.015;
+                    fwCtx.globalAlpha = p.life;
+                    fwCtx.fillStyle = p.color;
+                    fwCtx.fillRect(p.x, p.y, p.size, p.size);
+                });
+                fwCtx.globalAlpha = 1;
+                if (fireworksActive || particles.length > 0) requestAnimationFrame(animateFireworks);
+                else fwCanvas.style.display = 'none';
+            }
+
+            // ==================== ИНИЦИАЛИЗАЦИЯ ИГРЫ ====================
+            function initGame() {
+                updateCounter();
+                mapImg.onload = () => { imgReady = true; };
+                mapImg.onerror = () => { imgReady = false; };
+                mapImg.src = MAP_IMAGE_SRC;
+                loop();
+
+                canvas.addEventListener('click', (e) => {
+                    initAudio();
+                    if (isMoving) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const sx = canvas.width / rect.width,
+                        sy = canvas.height / rect.height;
+                    const px = (e.clientX - rect.left) * sx,
+                        py = (e.clientY - rect.top) * sy;
+                    const clicked = pixelToHex(px, py);
+                    if (!clicked) return;
+
+                    const ci = isChestCell(clicked.col, clicked.row);
+                    if (ci !== -1) {
+                        if (openedChests[ci]) { showToast("Этот сундук уже открыт!"); return; }
+                        if (areNeighbors(hero, clicked)) openQuestion(ci);
+                        else showToast("Нужно подойти ближе!");
+                        return;
+                    }
+                    if (!isPassable(clicked.col, clicked.row)) { showToast("Здесь не пройти!"); return; }
+                    if (areNeighbors(hero, clicked)) moveHeroTo(clicked.col, clicked.row);
+                    else showToast("Слишком далеко! Ходи по соседним клеткам.");
+                });
+
+                canvas.addEventListener('mousemove', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const sx = canvas.width / rect.width,
+                        sy = canvas.height / rect.height;
+                    highlightHex = pixelToHex((e.clientX - rect.left) * sx, (e.clientY - rect.top) * sy);
+                });
+
+                canvas.addEventListener('mouseleave', () => { highlightHex = null; });
+            }
+
+            // ==================== ЗАПУСК ====================
+            goToStage(STAGE.INTRO_IMAGE);
+
+            document.addEventListener('dblclick', function(e) { e.preventDefault(); }, { passive: false });
+            document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+            document.addEventListener('touchstart', function() {}, { once: true });
+
+            log('Готово');
+        })();
+    </script>
+</body>
+</html>
